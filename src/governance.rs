@@ -1,7 +1,5 @@
 use crate::staking::StakingConfig;
-use crate::system::SystemConfig;
 use std::collections::HashMap;
-
 pub trait GovernanceConfig: StakingConfig {}
 
 pub struct Proposal {
@@ -25,17 +23,33 @@ pub struct GovernancePallet<T: GovernanceConfig> {
 }
 
 impl<T: GovernanceConfig> GovernancePallet<T> {
+    // Create a new instance of the governance pallet
     pub fn new() -> Self {
-        todo!()
+        Self {
+            proposals: HashMap::new(),
+            votes: HashMap::new(),
+            next_proposal_id: 0,
+        }
     }
 
     // Create a new proposal
     pub fn create_proposal(
         &mut self,
-        creator: T::AccountId,
+        _creator: T::AccountId,
         description: String,
     ) -> Result<u32, &'static str> {
-        todo!()
+        self.next_proposal_id += 1;
+
+        self.proposals.insert(
+            self.next_proposal_id,
+            Proposal {
+                description,
+                yes_votes: 0,
+                no_votes: 0,
+                status: ProposalStatus::Active,
+            },
+        );
+        Ok(self.next_proposal_id)
     }
 
     // Vote on a proposal (true = yes, false = no)
@@ -45,17 +59,70 @@ impl<T: GovernanceConfig> GovernancePallet<T> {
         proposal_id: u32,
         vote_type: bool,
     ) -> Result<(), &'static str> {
-        todo!()
+        if self.votes.contains_key(&(voter.clone(), proposal_id)) {
+            return Err("You can only vote once");
+        }
+
+        if !self.proposals.contains_key(&proposal_id) {
+            return Err("the proposal data doesn't exist");
+        }
+
+        self.votes.insert((voter, proposal_id), vote_type);
+        let validate_proposal = self.get_proposal(proposal_id).expect("Proposal not found");
+
+        let yes_votes = if vote_type {
+            validate_proposal.yes_votes + 1
+        } else {
+            validate_proposal.yes_votes
+        };
+        let no_votes = if !vote_type {
+            validate_proposal.no_votes + 1
+        } else {
+            validate_proposal.no_votes
+        };
+
+        let result_proposal = Proposal {
+            description: validate_proposal.description.clone(),
+            yes_votes,
+            no_votes,
+            status: validate_proposal.status.clone(),
+        };
+
+        self.proposals.insert(proposal_id, result_proposal);
+
+        Ok(())
     }
 
     // Get proposal details
     pub fn get_proposal(&self, proposal_id: u32) -> Option<&Proposal> {
-        todo!()
+        self.proposals.get(&proposal_id)
     }
 
     // Finalize a proposal (changes status based on votes)
     pub fn finalize_proposal(&mut self, proposal_id: u32) -> Result<ProposalStatus, &'static str> {
-        todo!()
+        let data_proposal = self
+            .get_proposal(proposal_id)
+            .expect("could not found the proposal");
+
+        let yes_votes = data_proposal.yes_votes;
+        let no_votes = data_proposal.no_votes;
+
+        let status = if yes_votes > no_votes {
+            ProposalStatus::Approved
+        } else {
+            ProposalStatus::Rejected
+        };
+
+        let result_proposal = Proposal {
+            description: data_proposal.description.clone(),
+            yes_votes,
+            no_votes,
+            status: status.clone(),
+        };
+
+        self.proposals.insert(proposal_id, result_proposal);
+
+        Ok(status)
     }
 }
 

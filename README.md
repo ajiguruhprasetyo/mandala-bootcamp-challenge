@@ -94,3 +94,11 @@ OpenGuild is a builder-driven community centered around Polkadot. OpenGuild is b
 - **Website:** [OpenGuild Website](https://openguild.wtf/)
 - **Github:** [OpenGuild Labs](https://github.com/openguild-labs)
 - **Discord**: [Openguild Discord Channel](https://discord.gg/bcjMzxqtD7)
+
+## Participant Registration
+
+Add your information to the below list to officially participate in the workshop challenge (This is the first mission of the whole workshop)
+
+| Emoji | Name            | Github Username                                       | Occupations              |
+| ----- | --------------- | ----------------------------------------------------- | ------------------------ |
+|   🦁  | Aji Guruh Prasetyo            | [ajiguruhprasetyo](https://github.com/ajiguruhprasetyo)                 | Software Engineer                   |
